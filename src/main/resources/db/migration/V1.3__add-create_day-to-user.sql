@@ -1,0 +1,1 @@
+ALTER TABLE users ADD create_day TIMESTAMP;
