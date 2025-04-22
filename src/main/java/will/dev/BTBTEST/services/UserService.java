@@ -2,6 +2,9 @@ package will.dev.BTBTEST.services;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import will.dev.BTBTEST.entity.Role;
@@ -19,12 +22,13 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class UserService {
+public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final ValidationService validationService;
     private final ValidationRepository validationRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
+    //Inscription
     public ResponseEntity<?> create(User user){
         if (!user.getEmail().contains("@") || !user.getEmail().contains(".")) {
             throw new RuntimeException("Email invalide");
@@ -63,5 +67,17 @@ public class UserService {
 
         return ResponseEntity.ok("User " + userActiver.getName() + " Activated");
     }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return this.userRepository.findByEmail(username)
+                .orElseThrow(()-> new UsernameNotFoundException("Aucun utilisateur ne correspond a cet identifiant"));
+    }
+
+    public void modifierPassword(Map<String, String> parametre) {
+        User user = (User) this.loadUserByUsername(parametre.get("email"));
+        this.validationService.enregistrer(user);
+    }
+
 
 }
