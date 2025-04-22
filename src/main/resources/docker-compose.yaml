@@ -29,3 +29,13 @@ services:
     restart: always
     ports:
       - "8091:8080"
+
+  smtp4dev:
+    container_name: smtp4dev_btbtest
+    image: rnwood/smtp4dev:v3
+    restart: always
+    ports:
+      # Change the number before : to the port the web interface should be accessible on
+      - '3001:80'
+      # Change the number before : to the port the SMTP server should be accessible on
+      - '8025:25'

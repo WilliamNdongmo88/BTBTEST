@@ -27,11 +27,12 @@ public class User implements UserDetails {
 
     private String name;
     private String email;
+    private Boolean actif;
 
     @Column(name = "mot_de_passe")
     private String mdp;
 
-    @ManyToOne
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "role_id")
     private Role role;
 
@@ -60,12 +61,12 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return UserDetails.super.isAccountNonExpired();
+        return this.actif;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return UserDetails.super.isAccountNonLocked();
+        return this.actif;
     }
 
     @Override
@@ -75,6 +76,6 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return UserDetails.super.isEnabled();
+        return this.actif;
     }
 }
