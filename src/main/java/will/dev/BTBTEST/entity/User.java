@@ -19,8 +19,11 @@ public class User {
 
     private String name;
     private String email;
+
+    @Column(name = "mot_de_passe")
     private String mdp;
 
     @ManyToOne
+    @JoinColumn(name = "role_id")
     private Role role;
 }

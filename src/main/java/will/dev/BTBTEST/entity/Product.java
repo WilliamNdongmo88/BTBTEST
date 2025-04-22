@@ -17,9 +17,10 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    private Double price;
+    private String price;
     private String description;
 
     @ManyToOne
+    @JoinColumn(name = "added_by")
     private User addedBy;
 }
