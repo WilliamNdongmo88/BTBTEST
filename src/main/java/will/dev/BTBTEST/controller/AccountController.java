@@ -57,4 +57,29 @@ public class AccountController {
         }
         return null;
     }
+
+    //Modified Password
+    @PostMapping("modified-password")
+    public void modifierPassword(@RequestBody Map<String, String> param){
+        this.userService.modifierPassword(param);
+    }
+
+    //New Password
+    @PostMapping("new-password")
+    public void newPassword(@RequestBody Map<String, String> param){
+        this.userService.newPassword(param);
+    }
+
+    //deconnexion
+    @PostMapping("deconnexion")
+    public ResponseEntity<?> deconnexion(){
+        return this.jwtService.deconnexion();
+    }
+
+    //Refresh token
+    @PostMapping("refresh-token")
+    public Map<String, String> refreshToken(@RequestBody Map<String, String> refreshTokenRequest){
+        return this.jwtService.refreshToken(refreshTokenRequest);
+    }
+
 }

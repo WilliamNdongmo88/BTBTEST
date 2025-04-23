@@ -80,4 +80,14 @@ public class UserService implements UserDetailsService {
     }
 
 
+    public void newPassword(Map<String, String> param) {
+        User user = (User) this.loadUserByUsername(param.get("email"));
+        final Validation validation = validationService.lireCode(param.get("code"));
+        if (validation.getUser().getEmail().equals(user.getEmail())){
+            String mdpCrypte = this.bCryptPasswordEncoder.encode(param.get("password"));
+            user.setMdp(mdpCrypte);
+            this.userRepository.save(user);
+        }
+    }
+
 }
