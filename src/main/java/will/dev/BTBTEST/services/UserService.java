@@ -7,16 +7,20 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import will.dev.BTBTEST.entity.EmailValids;
 import will.dev.BTBTEST.entity.Role;
 import will.dev.BTBTEST.entity.User;
 import will.dev.BTBTEST.entity.Validation;
 import will.dev.BTBTEST.enums.TypeDeRole;
+import will.dev.BTBTEST.repository.EmailValidsRepository;
 import will.dev.BTBTEST.repository.UserRepository;
 import will.dev.BTBTEST.repository.ValidationRepository;
 
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -26,6 +30,7 @@ public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final ValidationService validationService;
     private final ValidationRepository validationRepository;
+    private final EmailValidsRepository emailValidsRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     //Inscription
@@ -42,12 +47,38 @@ public class UserService implements UserDetailsService {
         String mdpCrypte = this.bCryptPasswordEncoder.encode(user.getPassword());
         user.setMdp(mdpCrypte);
 
-        Role userRole = new Role();
-        userRole.setLibelle(TypeDeRole.USER);
-        user.setRole(userRole);
-        user = this.userRepository.save(user);
-        this.validationService.enregistrer(user);
+//        if (user.getEmail().contains(".admin")){
+//            Optional<EmailValids> emailValids = Optional.ofNullable(this.emailValidsRepository.findByEmail(user.getEmail())
+//                    .orElseThrow(() -> new RuntimeException("Email non valid")));
+//            System.out.println("Email: " + emailValids);
+//            if (emailValids.isPresent()){
+//                //this.bool = true;
+//                Role userRole = new Role();
+//                userRole.setLibelle(TypeDeRole.ADMIN);
+//                user.setRole(userRole);
+//                user = this.userRepository.save(user);
+//                this.validationService.enregistrer(user);
+//            }
+//        } else if (user.getEmail().contains(".manager")) {
+//            Optional<EmailValids> emailValids = Optional.ofNullable(this.emailValidsRepository.findByEmail(user.getEmail())
+//                    .orElseThrow(() -> new RuntimeException("Email non valid")));
+//            System.out.println("Email: " + emailValids);
+//            if (emailValids.isPresent()){
+//                //this.bool = true;
+//                Role userRole = new Role();
+//                userRole.setLibelle(TypeDeRole.MANAGER);
+//                user.setRole(userRole);
+//                user = this.userRepository.save(user);
+//                this.validationService.enregistrer(user);
+//            }
+//        }else {
 
+            Role userRole = new Role();
+            userRole.setLibelle(TypeDeRole.USER);
+            user.setRole(userRole);
+            user = this.userRepository.save(user);
+            this.validationService.enregistrer(user);
+        //}
         return ResponseEntity.ok(user);
     }
 
@@ -89,5 +120,20 @@ public class UserService implements UserDetailsService {
             this.userRepository.save(user);
         }
     }
+    public List<User> listUsers() {
+        return this.userRepository.findAll();
+    }
 
+    public ResponseEntity<Map<String, Object>> getAccountCreateToDay(){
+        LocalDate today = LocalDate.now();
+        //LocalDate today = LocalDate.of(2025, 3, 21);
+        System.out.println("Date du jour : " + today);
+        List<User> users = this.userRepository.findByCreateDay(today);
+        Map<String, Object> response = new HashMap<>();
+        response.put("date", today.toString());
+        response.put("totalAccountsCreated", users.size());
+        response.put("users", users);  // Optionnel, si tu veux renvoyer la liste des utilisateurs
+
+        return ResponseEntity.ok(response);
+    }
 }

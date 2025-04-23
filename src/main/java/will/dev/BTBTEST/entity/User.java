@@ -44,9 +44,14 @@ public class User implements UserDetails {
         this.createDay = LocalDate.now(ZoneId.systemDefault());
     }
 
+//    @Override
+//    public Collection<? extends GrantedAuthority> getAuthorities() {
+//        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + this.role.getLibelle()));
+//    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + this.role.getLibelle()));
+        return this.role.getLibelle().getAuthorities();
     }
 
     @Override
