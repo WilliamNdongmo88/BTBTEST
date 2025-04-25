@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Bienvenue</title>
+    <style>
+        body {
+            background: #f5f7fa;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .welcome-container {
+            text-align: center;
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            width: 350px;
+        }
+
+        .welcome-container h1 {
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .login-btn {
+            background-color: #4285F4;
+            color: white;
+            text-decoration: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 8px;
+            display: inline-block;
+            transition: background-color 0.3s ease;
+        }
+
+        .login-btn:hover {
+            background-color: #357ae8;
+        }
+    </style>
+</head>
+<body>
+
+<div class="welcome-container">
+    <h1>Bienvenue sur la platform BTB</h1>
+    <a th:href="@{/oauth2/authorization/google}" class="login-btn">
+        <img src="https://www.google.com/favicon.ico" alt="Google" style="vertical-align: middle; width: 20px; height: 20px; margin-right: 8px;">
+        Se connecter avec Google
+    </a>
+</div>
+
+</body>
+</html>

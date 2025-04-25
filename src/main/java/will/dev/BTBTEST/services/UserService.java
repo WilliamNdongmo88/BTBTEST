@@ -6,6 +6,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import will.dev.BTBTEST.entity.Role;
 import will.dev.BTBTEST.entity.User;
@@ -17,6 +19,7 @@ import will.dev.BTBTEST.repository.ValidationRepository;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -78,6 +81,5 @@ public class UserService implements UserDetailsService {
         User user = (User) this.loadUserByUsername(parametre.get("email"));
         this.validationService.enregistrer(user);
     }
-
 
 }

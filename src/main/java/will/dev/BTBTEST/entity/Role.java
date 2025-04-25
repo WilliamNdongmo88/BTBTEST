@@ -1,13 +1,11 @@
 package will.dev.BTBTEST.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import will.dev.BTBTEST.enums.TypeDeRole;
 
 @Entity
+@Builder
 @Getter
 @Setter
 @AllArgsConstructor
