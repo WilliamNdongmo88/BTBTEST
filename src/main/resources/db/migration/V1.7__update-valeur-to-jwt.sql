@@ -1,0 +1,1 @@
+ALTER TABLE jwt MODIFY valeur TEXT;

@@ -10,11 +10,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import will.dev.BTBTEST.entity.Jwt;
 import will.dev.BTBTEST.entity.RefreshToken;
+import will.dev.BTBTEST.entity.Role;
 import will.dev.BTBTEST.entity.User;
+import will.dev.BTBTEST.enums.TypeDeRole;
 import will.dev.BTBTEST.repository.JwtRepository;
+import will.dev.BTBTEST.repository.RoleRepository;
+import will.dev.BTBTEST.repository.UserRepository;
 import will.dev.BTBTEST.services.UserService;
 import io.jsonwebtoken.SignatureAlgorithm;
 
@@ -26,6 +32,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.*;
 
 import static will.dev.BTBTEST.security.KeyGeneratorUtil.generateEncryptionKey;
 
@@ -35,7 +42,9 @@ import static will.dev.BTBTEST.security.KeyGeneratorUtil.generateEncryptionKey;
 @RequiredArgsConstructor
 public class JwtService {
     private final UserService userService;
+    private final UserRepository userRepository;
     private final JwtRepository jwtRepository;
+    private final RoleRepository roleRepository;
     public static final String BEARER = "Bearer";
     public static final String REFRESH = "refresh";
     private final String ENCRYPTION_KEY = generateEncryptionKey(32);
@@ -77,6 +86,68 @@ public class JwtService {
                 ).collect(Collectors.toList());
         this.jwtRepository.saveAll(jwtList);
     }
+
+    public void upsertUser(OAuth2User oAuth2User) {
+        Map<String, String> jwtMap = new HashMap<>();
+        String email = oAuth2User.getAttribute("email");
+        String name = oAuth2User.getAttribute("name");
+
+        String token = null;
+        if (oAuth2User instanceof OidcUser oidcUser) {
+            token = oidcUser.getIdToken().getTokenValue();
+        }
+
+        Optional<User> existingUser = userRepository.findByEmail(email);
+
+        RefreshToken refreshToken = RefreshToken.builder()
+                .valeur(UUID.randomUUID().toString())
+                .expire(false)
+                .creation(Instant.now())
+                .expiration(Instant.now().plusMillis(30 * 60 * 1000))
+                .build();
+
+        if (existingUser.isEmpty()) {
+            Role role = Role.builder()
+                    .libelle(TypeDeRole.USER)
+                    .build();
+
+            User user = User.builder()
+                    .email(email)
+                    .name(name)
+                    .role(role)
+                    .actif(true)
+                    .build();
+            user = userRepository.save(user);
+
+            //jwtMap = generate(user.getEmail());
+
+            Jwt jwt = Jwt.builder()
+                    .valeur(token)
+                    .desactive(false)
+                    .expire(false)
+                    .user(user)
+                    .refreshToken(refreshToken)
+                    .build();
+
+            jwtRepository.save(jwt);
+        } else {
+            //jwtMap = generate(existingUser.get().getEmail());
+            User user = existingUser.get();
+            disableTokens(user);
+            Jwt jwt = Jwt.builder()
+                    .valeur(token)
+                    .desactive(false)
+                    .expire(false)
+                    .user(user)
+                    .refreshToken(refreshToken)
+                    .build();
+
+            jwtRepository.save(jwt);
+        }
+
+        System.out.println("Token enregistré : " + jwtMap);
+    }
+
 
     private Map<String, String> generateJwt(User user) {
         long currentTime = System.currentTimeMillis();
