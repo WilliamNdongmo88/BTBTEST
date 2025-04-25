@@ -10,11 +10,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import will.dev.BTBTEST.entity.Jwt;
 import will.dev.BTBTEST.entity.RefreshToken;
+import will.dev.BTBTEST.entity.Role;
 import will.dev.BTBTEST.entity.User;
+import will.dev.BTBTEST.enums.TypeDeRole;
 import will.dev.BTBTEST.repository.JwtRepository;
+import will.dev.BTBTEST.repository.UserRepository;
 import will.dev.BTBTEST.services.UserService;
 import io.jsonwebtoken.SignatureAlgorithm;
 
@@ -26,6 +31,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.*;
 
 import static will.dev.BTBTEST.security.KeyGeneratorUtil.generateEncryptionKey;
 
@@ -35,6 +41,7 @@ import static will.dev.BTBTEST.security.KeyGeneratorUtil.generateEncryptionKey;
 @RequiredArgsConstructor
 public class JwtService {
     private final UserService userService;
+    private final UserRepository userRepository;
     private final JwtRepository jwtRepository;
     public static final String BEARER = "Bearer";
     public static final String REFRESH = "refresh";
@@ -76,6 +83,45 @@ public class JwtService {
                         }
                 ).collect(Collectors.toList());
         this.jwtRepository.saveAll(jwtList);
+    }
+
+    public Map<String, String> upsertUser(OAuth2User oAuth2User){
+        Map<String, String> tmap = new HashMap<>();
+        String email = oAuth2User.getAttribute("email");
+        String name = oAuth2User.getAttribute("name");
+        //User existingUser = (User) this.userService.loadUserByUsername(oAuth2User.getAttribute("email"));
+        Optional<User> existingUser = userRepository.findByEmail(email);
+
+        if (oAuth2User instanceof OidcUser oidcUser) {
+            tmap.put("token", oidcUser.getIdToken().getTokenValue());
+        }
+
+        if (existingUser.isEmpty()) {
+            User user = new User();
+            Role role = Role.builder()
+                    .libelle(TypeDeRole.USER)
+                    .build();
+            user.setEmail(email);
+            user.setName(name);
+            user.setRole(role);
+            user.setActif(true);
+            user = userRepository.save(user);
+            Jwt jwt = Jwt
+                    .builder()
+                    .valeur(tmap.get("token"))
+                    .desactive(false)
+                    .expire(false)
+                    .user(user)
+                    //.refreshToken(refreshToken)//-----------------Branch refresh-token
+                    .build();
+            this.jwtRepository.save(jwt);
+        }else {
+            Jwt existingJwt = jwtRepository.findByUser(existingUser.get());
+            existingJwt.setValeur(tmap.get("token"));
+            jwtRepository.save(existingJwt);
+        }
+        System.out.println("Map :: " + tmap);
+        return tmap;
     }
 
     private Map<String, String> generateJwt(User user) {

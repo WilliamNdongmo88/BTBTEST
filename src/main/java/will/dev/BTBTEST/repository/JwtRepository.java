@@ -3,6 +3,7 @@ package will.dev.BTBTEST.repository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import will.dev.BTBTEST.entity.Jwt;
+import will.dev.BTBTEST.entity.User;
 
 import java.util.List;
 import java.util.Locale;
@@ -10,6 +11,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 public interface JwtRepository extends CrudRepository<Jwt, Long> {
+    Jwt findByUser(User user);
 
     @Query("SELECT j From Jwt j WHERE j.user.email =:email AND j.expire = :expire AND j.desactive = :desactive")
     Optional<Jwt> findUserValidToken(String email, Boolean desactive, Boolean expire);
