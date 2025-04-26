@@ -18,9 +18,18 @@ public class Product {
     private Long id;
     private String name;
     private String price;
+
+    public Product(String name, String price, String description, User addedBy) {
+        this.name = name;
+        this.price = price;
+        this.description = description;
+        this.addedBy = addedBy;
+    }
+
     private String description;
 
     @ManyToOne
     @JoinColumn(name = "added_by")
     private User addedBy;
+
 }

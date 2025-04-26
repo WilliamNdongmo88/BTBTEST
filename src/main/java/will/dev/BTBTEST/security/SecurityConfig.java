@@ -48,7 +48,7 @@ public class SecurityConfig {
                                     OAuth2User user = token.getPrincipal();
                                     log.info("Info user connecté :: " + user);
                                     jwtService.upsertUser(user);
-                                    response.sendRedirect(request.getContextPath() + "/profile");// Redirection manuelle après traitement
+                                    response.sendRedirect(request.getContextPath() + "/produits");// Redirection manuelle après traitement
                                 })
                         //.defaultSuccessUrl("/profile", true) ignore l'execution de successHandler
                 )

@@ -2,57 +2,148 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Bienvenue</title>
+    <title>Connexion</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
     <style>
         body {
-            background: #f5f7fa;
-            margin: 0;
-            height: 100vh;
+            font-family: sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-family: 'Segoe UI', sans-serif;
+            height: 100vh;
+            background-color: #fff;
+            margin: 0;
         }
 
-        .welcome-container {
+        .login-container {
+            max-width: 400px;
+            width: 100%;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
             text-align: center;
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-            width: 350px;
+            margin-bottom: 20px;
         }
 
-        .welcome-container h1 {
-            margin-bottom: 1rem;
-            color: #333;
+        .logo img {
+            height: 40px;
         }
 
-        .login-btn {
-            background-color: #4285F4;
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        input[type="email"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        .btn-blue {
+            width: 100%;
+            background-color: #0033cc;
             color: white;
-            text-decoration: none;
-            padding: 0.75rem 1.5rem;
-            font-size: 1rem;
-            border-radius: 8px;
-            display: inline-block;
-            transition: background-color 0.3s ease;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
         }
 
-        .login-btn:hover {
-            background-color: #357ae8;
+        .separator {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .separator::before,
+        .separator::after {
+            content: "";
+            flex: 1;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .separator:not(:empty)::before {
+            margin-right: 10px;
+        }
+
+        .separator:not(:empty)::after {
+            margin-left: 10px;
+        }
+
+        .social-login {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .social-login a {
+            flex: 1;
+            padding: 10px;
+            margin: 0 5px;
+            text-align: center;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            text-decoration: none;
+            color: black;
+            font-weight: 500;
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .footer a {
+            color: #0033cc;
+            text-decoration: none;
         }
     </style>
 </head>
 <body>
+<div class="login-container">
+    <div class="logo">
+        <img src="/images/opera-logo.png" alt="Logo Opera">
+    </div>
+    <div class="title">Commençons avec votre e-mail</div>
+    <form th:action="@{/connexion}" method="post">
+        <input type="email" name="email" placeholder="E-mail" required>
+        <button class="btn-blue" type="submit">Continuer</button>
+    </form>
 
-<div class="welcome-container">
-    <h1>Bienvenue sur la platform BTB</h1>
-    <a th:href="@{/oauth2/authorization/google}" class="login-btn">
-        <img src="https://www.google.com/favicon.ico" alt="Google" style="vertical-align: middle; width: 20px; height: 20px; margin-right: 8px;">
-        Se connecter avec Google
-    </a>
+    <div class="separator">Ou continuez avec</div>
+    <div class="social-login">
+        <a th:href="@{/oauth2/authorization/google}">
+<!--            <img src="/images/google-icon.png" alt="Google" width="16"> -->
+            <img src="https://www.google.com/favicon.ico" alt="Google" style="vertical-align: middle; width: 20px; height: 20px; margin-right: 8px;">
+            Google
+        </a>
+        <a th:href="@{/oauth2/authorization/facebook}">
+<!--            <img src="/images/facebook-icon.png" alt="Facebook" width="16"> -->
+            <img src="https://www.facebook.com/favicon.ico" alt="Google" style="vertical-align: middle; width: 20px; height: 20px; margin-right: 8px;">
+            Facebook
+        </a>
+        <a href="#">
+<!--            <img src="/images/apple-icon.png" alt="Apple" width="16">-->
+            <img src="https://www.apple.com/favicon.ico" alt="Google" style="vertical-align: middle; width: 20px; height: 20px; margin-right: 8px;">
+            Apple
+        </a>
+    </div>
+
+    <div class="footer">
+        En poursuivant, vous acceptez nos
+        <a href="#">Conditions d'utilisation</a> et notre
+        <a href="#">Politique de confidentialité</a>.
+    </div>
 </div>
-
 </body>
 </html>
