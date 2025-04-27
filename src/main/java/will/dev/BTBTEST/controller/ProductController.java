@@ -32,7 +32,7 @@ public class ProductController {
     }
 
     //Get Product Id
-    @PreAuthorize("hasAnyAuthority('ADMIN_READ','MANAGER_READ','USER_READ')")
+    //@PreAuthorize("hasAnyAuthority('ADMIN_READ','MANAGER_READ','USER_READ')")
     @GetMapping("{id}")
     public Optional<Product> getProduct(@PathVariable Long id){
         return this.productService.lire(id);
@@ -58,5 +58,6 @@ public class ProductController {
     public ResponseEntity<?> deleteProduct(@PathVariable Long id){
         return this.productService.delete(id);
     }
+
 
 }

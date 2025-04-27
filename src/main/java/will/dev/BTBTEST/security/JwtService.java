@@ -145,7 +145,7 @@ public class JwtService {
             jwtRepository.save(jwt);
         }
 
-        System.out.println("Token enregistré : " + jwtMap);
+        System.out.println("Token enregistré : " + token);
     }
 
 

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Mon Panier</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+    <body>
+        <div class="container mt-5">
+            <h2 class="mb-4">Votre Panier</h2>
+
+            <div th:if="${panier.empty}">
+                <p>Votre panier est vide.</p>
+                <a href="/api/page-products" class="btn btn-primary">Retour à la boutique</a>
+            </div>
+
+            <div th:if="${!panier.empty}">
+                <table class="table table-bordered">
+                    <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Prix</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="product : ${panier}">
+                        <td th:text="${product.name}">Nom</td>
+                        <td th:text="${product.price + ' €'}">0.00 €</td>
+                    </tr>
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <th>Total</th>
+                        <th th:text="${#numbers.formatCurrency(total)}">0,00 €</th>
+                    </tr>
+                    </tfoot>
+                </table>
+                <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+                    <a href="/api/page-products" class="btn btn-primary">Continuer vos achats</a>
+                    <a href="/api/page-payment" class="btn btn-success">Passer votre commande</a>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
