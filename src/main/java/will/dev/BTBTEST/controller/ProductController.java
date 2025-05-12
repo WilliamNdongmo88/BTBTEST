@@ -39,10 +39,17 @@ public class ProductController {
     }
 
     //Get Product Name
+//    @PreAuthorize("hasAnyAuthority('ADMIN_READ','MANAGER_READ','USER_READ')")
+//    @GetMapping("product-name")
+//    public List<Product> getProduct(@RequestBody Map<String,String> param){
+//        return this.productService.searchByName(param.get("name"));
+//    }
+
+    //Get Product Name
     @PreAuthorize("hasAnyAuthority('ADMIN_READ','MANAGER_READ','USER_READ')")
     @GetMapping("product-name")
-    public List<Product> getProduct(@RequestBody Map<String,String> param){
-        return this.productService.searchByName(param.get("name"));
+    public List<Product> getProductName(@RequestParam String name){
+        return this.productService.searchByName(name);
     }
 
     //Put

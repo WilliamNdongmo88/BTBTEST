@@ -49,11 +49,15 @@ public class AccountController {
     //Connexion
     @PostMapping("connexion")
     public Map<String, String> connexion(@RequestBody AuthenticationDTO authenticationDTO){
-        final Authentication authenticate = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(authenticationDTO.username(), authenticationDTO.password())
-        );
-        System.out.println("authenticate isAuthenticated:: " + authenticate.isAuthenticated());
-        if (authenticate.isAuthenticated()){
+//        final Authentication authenticate = authenticationManager.authenticate(
+//                new UsernamePasswordAuthenticationToken(authenticationDTO.username(), authenticationDTO.password())
+//        );
+
+        Authentication authRequest = new UsernamePasswordAuthenticationToken(authenticationDTO.username(), authenticationDTO.password());
+        Authentication authResult = authenticationManager.authenticate(authRequest);
+
+        System.out.println("authenticate isAuthenticated:: " + authResult.isAuthenticated());
+        if (authResult.isAuthenticated()){
             log.info("username: " + authenticationDTO.username());
             return this.jwtService.generate(authenticationDTO.username());//Retourne le token de connexion
         }

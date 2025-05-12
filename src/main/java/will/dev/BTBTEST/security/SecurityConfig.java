@@ -55,7 +55,8 @@ public class SecurityConfig {
                 // Debut: Pour autoriser l'utilisateur a effectuer des actions dans l'application grace au token
 //                .sessionManagement(httpSecuritySessionManagementConfigurer ->
 //                        httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-//                )STATELESS(Mode sans session): l'utilisateur n'est pas conservé entre le successHandler et "/profile"
+//                )
+//                STATELESS(Mode sans session): l'utilisateur n'est pas conservé entre le successHandler et "/profile"
 //                        //ce qui fait échouer la redirection
 
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
