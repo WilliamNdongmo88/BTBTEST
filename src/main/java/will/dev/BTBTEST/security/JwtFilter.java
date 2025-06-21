@@ -40,7 +40,7 @@ public class JwtFilter extends OncePerRequestFilter {
         try {
             //Bearer eyJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3NDI2OTYyMDAsImV4cCI6MTc0MjY5ODAwMCwic3ViIjoiZm90c29uZG9uZ21vOEBnbWFpbC5jb20iLCJub20iOiJGb3RzbyBOZG9uZ21vIiwiZW1haWwiOiJmb3Rzb25kb25nbW84QGdtYWlsLmNvbSJ9.LfcWY1gDsACTUwld1wLmw6LICu6K54WnCku7-89VVn4
             String authorisation = request.getHeader("Authorization");
-            //System.out.println("Authorization Header: " + authorisation);
+            System.out.println("Header Authorization reçu: " + authorisation);
 
             if (authorisation != null && authorisation.startsWith("Bearer ")) {
                 token = authorisation.substring(7);

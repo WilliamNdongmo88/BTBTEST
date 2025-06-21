@@ -4,8 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import will.dev.BTBTEST.dto.ProductDTO;
+import will.dev.BTBTEST.dtoMapper.ProductDTOMapper;
+import will.dev.BTBTEST.entity.Files;
 import will.dev.BTBTEST.entity.Product;
 import will.dev.BTBTEST.entity.User;
+import will.dev.BTBTEST.repository.FilesRepository;
 import will.dev.BTBTEST.repository.ProductRepository;
 
 import java.util.List;
@@ -16,6 +21,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ProductService {
     private final ProductRepository productRepository;
+    private final FilesRepository filesRepository;
+    private final ProductDTOMapper productDTOMapper;
 
     //Create
     public void create(Product product) {
@@ -23,21 +30,42 @@ public class ProductService {
         if (!productDansBD.isEmpty()) {
             throw new RuntimeException("Product already exist");
         }
+        Files file = new Files();
+        file.setName(product.getProductImage().getName());
+        file.setContent(product.getProductImage().getContent());
+        this.filesRepository.save(file);
+
+        if(!product.getImages().isEmpty()){
+            for (int i = 0; i < product.getImages().size(); i++) {
+                Files files = new Files();
+                files.setName(product.getImages().get(i).getName());
+                files.setContent(product.getImages().get(i).getContent());
+                product.addImage(files);
+            }
+        }else {throw new RuntimeException("Liste d'images vide");}
+
         User userConnected = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         product.setAddedBy(userConnected);
+        product.setProductImage(file);
 
         this.productRepository.save(product);
     }
 
     //Read
-    public List<Product> search() {
-        return (List<Product>) this.productRepository.findAll();
+    public List<ProductDTO> search() {
+        List<Product> products = (List<Product>) this.productRepository.findAll();
+        List<ProductDTO> productDTOList = new java.util.ArrayList<>(List.of());
+        for (Product product: products){
+            productDTOList.add(productDTOMapper.mapToDto(product));
+        }
+        return productDTOList;
     }
 
     //Read
-    public Optional<Product> lire(Long id) {
+    public Optional<ProductDTO> lire(Long id) {
         Product product = this.productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
-        return Optional.ofNullable(product);
+        ProductDTO productDTO = productDTOMapper.mapToDto(product);
+        return Optional.ofNullable(productDTO);
     }
 
     //Update

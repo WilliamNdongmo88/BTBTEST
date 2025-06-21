@@ -1,4 +1,4 @@
-package will.dev.BTBTEST.controller;
+package will.dev.BTBTEST.controller.viewController;
 
 import com.paypal.api.payments.Links;
 import com.paypal.api.payments.Payment;

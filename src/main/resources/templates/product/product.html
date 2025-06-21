@@ -28,7 +28,7 @@
     <h2 class="mb-4 text-center">Select Products</h2>
     <div class="row row-cols-1 row-cols-md-3 g-4" th:if="${products}">
         <div class="col" th:each="product : ${products}">
-            <a th:href="@{'/page-products/' + ${product.id}}" class="text-decoration-none text-dark">
+            <a th:href="@{'/page-products /' + ${product.id}}" class="text-decoration-none text-dark">
                 <div class="product-card h-100 text-center">
                     <img th:src="@{${product.imageUrl}}" alt="Image product" class="product-image mb-3" />
                     <h5 th:text="${product.name}">Product Name</h5>

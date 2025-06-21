@@ -10,14 +10,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import will.dev.BTBTEST.dto.UserDto;
+import will.dev.BTBTEST.dtoMapper.UserDtoMapper;
 import will.dev.BTBTEST.entity.Jwt;
 import will.dev.BTBTEST.entity.RefreshToken;
-import will.dev.BTBTEST.entity.Role;
 import will.dev.BTBTEST.entity.User;
-import will.dev.BTBTEST.enums.TypeDeRole;
 import will.dev.BTBTEST.repository.JwtRepository;
 import will.dev.BTBTEST.repository.RoleRepository;
 import will.dev.BTBTEST.repository.UserRepository;
@@ -34,8 +32,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.*;
 
-import static will.dev.BTBTEST.security.KeyGeneratorUtil.generateEncryptionKey;
-
 @Slf4j
 @Transactional
 @Service
@@ -44,34 +40,39 @@ public class JwtService {
     private final UserService userService;
     private final UserRepository userRepository;
     private final JwtRepository jwtRepository;
-    private final RoleRepository roleRepository;
+    private final UserDtoMapper userDtoMapper;
     public static final String BEARER = "Bearer";
     public static final String REFRESH = "refresh";
-    private final String ENCRYPTION_KEY = generateEncryptionKey(32);
 
-    public Map<String, String> generate(String username){
-        User user = (User) this.userService.loadUserByUsername(username);
-        this.disableTokens(user);//---------------------Désactivation de tous les tokens lié a l'utilisateur précedement creer
-        Map<String, String> jwtMap = new java.util.HashMap<>(this.generateJwt(user));
-        //-----------------Branch refresh-token
-        RefreshToken refreshToken = RefreshToken
-                .builder()
+    public Map<String, String> generate(String username) {
+        // 1) charge l’utilisateur
+        User user = (User) userService.loadUserByUsername(username);
+
+        // 2) désactive tous les anciens tokens de cet utilisateur
+        disableTokens(user);
+
+        // 3) génère un nouveau JWT signé
+        Map<String, String> jwtMap = new HashMap<>( generateJwt(user) );
+
+        // 4) crée un RefreshToken
+        RefreshToken refreshToken = RefreshToken.builder()
                 .valeur(UUID.randomUUID().toString())
                 .expire(false)
                 .creation(Instant.now())
-                .expiration(Instant.now().plusMillis(30*60*1000))
+                .expiration(Instant.now().plusMillis(30 * 60 * 1000))
                 .build();
-        // début branch déconnexion
-        Jwt jwt = Jwt
-                .builder()
+
+        // 5) crée et sauve un objet Jwt en base (avec la valeur du token et le refreshToken)
+        Jwt jwt = Jwt.builder()
                 .valeur(jwtMap.get(BEARER))
                 .desactive(false)
                 .expire(false)
                 .user(user)
-                .refreshToken(refreshToken)//-----------------Branch refresh-token
+                .refreshToken(refreshToken)
                 .build();
-        this.jwtRepository.save(jwt);//Sauvegade la valeur du token dans la bd
-        //Fin déconnexion
+        jwtRepository.save(jwt);
+
+        // 6) retourne le map contenant { "Bearer": <token>, "refresh": <refreshValue> }
         jwtMap.put(REFRESH, refreshToken.getValeur());
         return jwtMap;
     }
@@ -87,88 +88,31 @@ public class JwtService {
         this.jwtRepository.saveAll(jwtList);
     }
 
-    public void upsertUser(OAuth2User oAuth2User) {
-        Map<String, String> jwtMap = new HashMap<>();
-        String email = oAuth2User.getAttribute("email");
-        String name = oAuth2User.getAttribute("name");
-
-        String token = null;
-        if (oAuth2User instanceof OidcUser oidcUser) {
-            token = oidcUser.getIdToken().getTokenValue();
-        }
-
-        Optional<User> existingUser = userRepository.findByEmail(email);
-
-        RefreshToken refreshToken = RefreshToken.builder()
-                .valeur(UUID.randomUUID().toString())
-                .expire(false)
-                .creation(Instant.now())
-                .expiration(Instant.now().plusMillis(30 * 60 * 1000))
-                .build();
-
-        if (existingUser.isEmpty()) {
-            Role role = Role.builder()
-                    .libelle(TypeDeRole.USER)
-                    .build();
-
-            User user = User.builder()
-                    .email(email)
-                    .name(name)
-                    .role(role)
-                    .actif(true)
-                    .build();
-            user = userRepository.save(user);
-
-            //jwtMap = generate(user.getEmail());
-
-            Jwt jwt = Jwt.builder()
-                    .valeur(token)
-                    .desactive(false)
-                    .expire(false)
-                    .user(user)
-                    .refreshToken(refreshToken)
-                    .build();
-
-            jwtRepository.save(jwt);
-        } else {
-            //jwtMap = generate(existingUser.get().getEmail());
-            User user = existingUser.get();
-            disableTokens(user);
-            Jwt jwt = Jwt.builder()
-                    .valeur(token)
-                    .desactive(false)
-                    .expire(false)
-                    .user(user)
-                    .refreshToken(refreshToken)
-                    .build();
-
-            jwtRepository.save(jwt);
-        }
-
-        System.out.println("Token enregistré : " + token);
-    }
-
-
     private Map<String, String> generateJwt(User user) {
-        long currentTime = System.currentTimeMillis();
-        long expirationTime = currentTime + 10*60*1000;
+        long now       = System.currentTimeMillis();
+        long expireIn  = now + 100 * 60 * 1000; // 100 minutes
+
         Map<String, Object> claims = Map.of(
                 "nom", user.getName(),
-                Claims.EXPIRATION, new Date(expirationTime),
+                "role", user.getRole().getLibelle(),
+                Claims.EXPIRATION, new Date(expireIn),
                 Claims.SUBJECT, user.getEmail()
         );
 
-        String bearer = Jwts.builder()
-                .setIssuedAt(new Date(currentTime))
-                .setExpiration(new Date(expirationTime))
+        String token = Jwts.builder()
+                .setIssuedAt(new Date(now))
+                .setExpiration(new Date(expireIn))
                 .setSubject(user.getEmail())
-                .claims(claims)
+                .addClaims(claims)
                 .signWith(getKey(), SignatureAlgorithm.HS256)
                 .compact();
-        return Map.of(BEARER, bearer);
+
+        return Map.of(BEARER, token);
     }
 
-    private Key getKey(){
+    private Key getKey() {
+        // Clé Base64 fixée en dur
+        String ENCRYPTION_KEY = "9deacf9b9645cd4739ce7db841635e3665fa217ef413e7087649c23f6528cd66";
         byte[] decoded = Decoders.BASE64.decode(ENCRYPTION_KEY);
         return Keys.hmacShaKeyFor(decoded);
     }
@@ -181,11 +125,14 @@ public class JwtService {
         jwt.setDesactive(true);
         this.jwtRepository.save(jwt);
 
-        return ResponseEntity.ok("User "+ user.getName()+" disconnected");
+        UserDto userDto = userDtoMapper.mapToDto(user);
+
+        return ResponseEntity.ok(userDto);
     }
 
     public Jwt tokenByValue(String token) {
-        return this.jwtRepository.findByValeurAndDesactiveAndExpire(token, false, false)
+        // Recherche du JWT en base, non désactivé et non expiré
+        return jwtRepository.findByValeurAndDesactiveAndExpire(token, false, false)
                 .orElseThrow(() -> new RuntimeException("Token invalid ou inconnu"));
     }
 

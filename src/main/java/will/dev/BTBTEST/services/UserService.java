@@ -7,6 +7,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import will.dev.BTBTEST.dto.UserDto;
+import will.dev.BTBTEST.dtoMapper.UserDtoMapper;
 import will.dev.BTBTEST.entity.EmailValids;
 import will.dev.BTBTEST.entity.Role;
 import will.dev.BTBTEST.entity.User;
@@ -32,19 +34,20 @@ public class UserService implements UserDetailsService {
     private final ValidationRepository validationRepository;
     private final EmailValidsRepository emailValidsRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final UserDtoMapper userDtoMapper;
 
     //Inscription
-    public ResponseEntity<?> create(User user){
-        if (!user.getEmail().contains("@") || !user.getEmail().contains(".")) {
-            throw new RuntimeException("Email invalide");
+    public ResponseEntity<UserDto> create(UserDto userDto){
+        if (!userDto.getEmail().contains("@") || !userDto.getEmail().contains(".")) {
+            throw new RuntimeException("Email invalide: '@' ou '.' requis");
         }
-
+        User user = userDtoMapper.mapToEntity(userDto);
         Optional<User> optionalUser = this.userRepository.findByEmail(user.getEmail());
         if (!optionalUser.isEmpty()) {
             throw new RuntimeException("Email déjà existant");
         }
         user.setActif(false);
-        String mdpCrypte = this.bCryptPasswordEncoder.encode(user.getPassword());
+        String mdpCrypte = this.bCryptPasswordEncoder.encode(userDto.getPassword());
         user.setMdp(mdpCrypte);
 
 //        if (user.getEmail().contains(".admin")){
@@ -79,6 +82,21 @@ public class UserService implements UserDetailsService {
             user = this.userRepository.save(user);
             this.validationService.enregistrer(user);
         //}
+        return ResponseEntity.ok(userDtoMapper.mapToDto(user));
+    }
+
+    //Inscription
+    public ResponseEntity<User> createFromGoogle(String name, String email, Boolean emailVerified){
+        User user =  new User();
+        Role userRole = new Role();
+        userRole.setLibelle(TypeDeRole.USER);
+        user = User.builder()
+                   .name(name)
+                   .email(email)
+                   .actif(emailVerified)
+                   .role(userRole)
+                   .build();
+        user = this.userRepository.save(user);
         return ResponseEntity.ok(user);
     }
 
@@ -114,10 +132,12 @@ public class UserService implements UserDetailsService {
     public void newPassword(Map<String, String> param) {
         User user = (User) this.loadUserByUsername(param.get("email"));
         final Validation validation = validationService.lireCode(param.get("code"));
-        if (validation.getUser().getEmail().equals(user.getEmail())){
+        if (validation.getUser().getEmail().equals(user.getEmail()) && validation.getUser().getId().equals(user.getId())){
             String mdpCrypte = this.bCryptPasswordEncoder.encode(param.get("password"));
             user.setMdp(mdpCrypte);
             this.userRepository.save(user);
+        }else {
+            throw new RuntimeException("Code activation incorrect pour cet utilisateur");
         }
     }
     public List<User> listUsers() {
@@ -135,5 +155,26 @@ public class UserService implements UserDetailsService {
         response.put("users", users);  // Optionnel, si tu veux renvoyer la liste des utilisateurs
 
         return ResponseEntity.ok(response);
+    }
+
+    public UserDto getUser(String username) {
+        User user = (User) this.loadUserByUsername(username);
+        return userDtoMapper.mapToDto(user);
+    }
+
+    public User findOrCreateUser(String email, String name) {
+        return userRepository.findByEmail(email)
+                .orElseGet(() -> {
+                    User newUser = new User();
+                    newUser.setEmail(email);
+                    newUser.setName(name);
+                    return userRepository.save(newUser);
+                });
+    }
+
+    public ResponseEntity<?> checkEmail(String email) {
+        User user = this.userRepository.findByEmail(email)
+                .orElseThrow(()-> new UsernameNotFoundException("Adresse email inexistante"));
+        return ResponseEntity.ok(userDtoMapper.mapToDto(user));
     }
 }

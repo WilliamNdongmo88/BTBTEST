@@ -1,10 +1,11 @@
-package will.dev.BTBTEST.controller;
+package will.dev.BTBTEST.controller.viewController;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import will.dev.BTBTEST.dto.ProductDTO;
 import will.dev.BTBTEST.entity.User;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Controller;
@@ -69,15 +70,15 @@ public class ViewProductController {
         System.out.println("Product :: "+ prodList);
         List<Product> products = new ArrayList<>();
         for(Product prod: prodList){
-            products.add(
-                    new Product(
-                            prod.getId(),
-                            prod.getName(),
-                            prod.getPrice(),
-                            prod.getImageUrl(),
-                            prod.getDescription(),
-                            userConnected.get())
-            );
+//            products.add(
+//                    new Product(
+//                            prod.getId(),
+//                            prod.getName(),
+//                            prod.getPrice(),
+//                            prod.getProductImage(),
+//                            prod.getDescription(),
+//                            userConnected.get())
+//            );
         }
         System.out.println("products :: "+ products);
         model.addAttribute("products", products);
@@ -87,7 +88,7 @@ public class ViewProductController {
     @GetMapping("/page-products/{id}")
     public String afficherDetailProduit(@PathVariable Long id, Model model) {
         try{
-            Optional<Product> product = this.productService.lire(id);
+            Optional<ProductDTO> product = this.productService.lire(id);
             if (product.isPresent()) {
                 model.addAttribute("product", product.get());
             } else {
@@ -102,8 +103,8 @@ public class ViewProductController {
 
     @PostMapping("/panier/ajouter")
     public String ajouterAuPanier(@RequestParam Long id) {
-        Optional<Product> product = this.productService.lire(id);
-        this.cartService.ajouterProduit(product.get());
+        Optional<ProductDTO> product = this.productService.lire(id);
+//        this.cartService.ajouterProduit(product.get());
         return "redirect:/panier"; // ou redirect:/panier pour afficher le panier
     }
 

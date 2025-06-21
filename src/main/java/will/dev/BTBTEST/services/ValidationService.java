@@ -62,6 +62,6 @@ public class ValidationService {
     }
 
     public Validation lireCode(String code){
-        return this.validationRepository.findByCode(code).orElseThrow(()-> new RuntimeException("Votre code est invalide"));
+        return this.validationRepository.findByCode(code).orElseThrow(()-> new RuntimeException("Votre code activation est invalide"));
     }
 }
