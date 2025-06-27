@@ -3,6 +3,17 @@ networks:
     driver: bridge
 
 services:
+  nginx:
+    image: nginx:1.27
+    container_name: nginx
+    restart: always
+    ports:
+      - "8151:8080"
+    volumes:
+      - ../files:/tmp/files
+      - "D:/Projets/JavaProject/files:/tmp/files"
+#      - ./files.conf:/etc/nginx/conf.d/files.conf
+
   dev-db:
     image: mysql
     container_name: res-btbtest_dev

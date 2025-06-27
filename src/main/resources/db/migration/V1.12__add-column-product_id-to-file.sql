@@ -1,2 +1,0 @@
-ALTER TABLE files ADD COLUMN product_id BIGINT;
-ALTER TABLE files ADD CONSTRAINT fk_files_product FOREIGN KEY (product_id) REFERENCES product(id) ON DELETE CASCADE;

@@ -24,6 +24,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 
 import java.security.Key;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -59,7 +60,7 @@ public class JwtService {
                 .valeur(UUID.randomUUID().toString())
                 .expire(false)
                 .creation(Instant.now())
-                .expiration(Instant.now().plusMillis(30 * 60 * 1000))
+                .expiration(Instant.now().plus(48, ChronoUnit.HOURS))
                 .build();
 
         // 5) crée et sauve un objet Jwt en base (avec la valeur du token et le refreshToken)
@@ -175,12 +176,22 @@ public class JwtService {
     }
 
     public Map<String, String> refreshToken(Map<String, String> refreshTokenRequest) {
-        final Jwt jwt = this.jwtRepository.findByRefreshToken(refreshTokenRequest.get(REFRESH))
+        final String tokenValeur = refreshTokenRequest.get("refresh");
+        log.info("Token reçu : {}", tokenValeur);
+
+        final Jwt jwt = this.jwtRepository.findByRefreshToken(tokenValeur)
                 .orElseThrow(() -> new RuntimeException("### Token invalid ###"));
-        if (jwt.getRefreshToken().getExpire() || jwt.getRefreshToken().getExpiration().isBefore(Instant.now())) {
+
+        final RefreshToken refreshToken = jwt.getRefreshToken();
+        log.info("Expire flag: {}", refreshToken.getExpire());
+        log.info("Expiration: {}", refreshToken.getExpiration());
+        log.info("Instant.now(): {}", Instant.now());
+
+        if (Boolean.TRUE.equals(refreshToken.getExpire()) || refreshToken.getExpiration().isBefore(Instant.now())) {
             throw new RuntimeException("Token invalid");
         }
-        Map<String, String> tokens = this.generate(jwt.getUser().getEmail());
-        return tokens;
+
+        return this.generate(jwt.getUser().getEmail());
     }
+
 }

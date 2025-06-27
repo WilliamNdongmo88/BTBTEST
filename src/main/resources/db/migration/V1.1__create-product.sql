@@ -1,7 +1,8 @@
-CREATE TABLE product(
-    id bigint primary key auto_increment,
-    name varchar(255),
-    price varchar(255),
-    description varchar(255),
-    added_by bigint
+CREATE TABLE product (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255),
+    price DOUBLE,
+    description TEXT,
+    files_id BIGINT,
+    added_by BIGINT
 );

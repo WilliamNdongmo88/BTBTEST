@@ -17,7 +17,7 @@ public class Files {
     private String name;
     private String temp;
 
-    @Column(columnDefinition = "LONGTEXT") // ou TEXT, selon ton besoin
+    @Transient
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)

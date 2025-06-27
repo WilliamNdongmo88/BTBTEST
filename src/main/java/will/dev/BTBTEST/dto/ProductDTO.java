@@ -8,11 +8,8 @@ import java.util.List;
 public class ProductDTO {
     private Long id;
     private String name;
-    private String description;
     private Double price;
-    private FileDTO productImage;
-    private List<FileDTO> images;
-    private UserDto addedBy; // ou UserDto si besoin
-
-    // getters, setters
+    private String description;
+    private FileDTO mainImage; // image principale
+    private List<FileDTO> images; // images supplémentaires
 }

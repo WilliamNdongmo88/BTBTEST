@@ -1,1 +1,0 @@
-ALTER TABLE jwt ADD refresh_token_id VARCHAR(255);

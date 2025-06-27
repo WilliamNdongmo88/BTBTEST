@@ -1,7 +1,8 @@
-CREATE TABLE jwt(
-    id bigint PRIMARY KEY auto_increment,
-    valeur VARCHAR(255),
+CREATE TABLE jwt (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    valeur TEXT,
     desactive BOOLEAN,
     expire BOOLEAN,
-    user_id bigint
+    refresh_token_id BIGINT UNIQUE,
+    user_id BIGINT
 );

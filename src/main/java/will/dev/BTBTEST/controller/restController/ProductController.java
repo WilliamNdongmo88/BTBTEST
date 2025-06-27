@@ -1,16 +1,23 @@
 package will.dev.BTBTEST.controller.restController;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.io.FilenameUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import will.dev.BTBTEST.dto.ProductDTO;
+import will.dev.BTBTEST.entity.FileParams;
+import will.dev.BTBTEST.entity.Files;
 import will.dev.BTBTEST.entity.Product;
+import will.dev.BTBTEST.repository.FilesRepository;
 import will.dev.BTBTEST.services.ProductService;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -18,11 +25,13 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ProductController {
     private final ProductService productService;
+    private final FilesRepository filesRepository;
+    private FilesController filesController;
 
     //Post
     @PreAuthorize("hasAnyAuthority('ADMIN_CREATE')")
     @PostMapping("create")
-    public void create(@RequestBody Product product){
+    public void create(@RequestBody Product product) throws IOException {
         this.productService.create(product);
     }
 
@@ -57,15 +66,28 @@ public class ProductController {
     //Put
     @PreAuthorize("hasAnyAuthority('ADMIN_UPDATE','MANAGER_UPDATE')")
     @PutMapping("{id}")
-    public ResponseEntity<?> putProduct(@PathVariable Long id, @RequestBody Product product){
-        return this.productService.modifier(id, product);
+    public void putProduct(@PathVariable Long id, @RequestBody Product product) throws IOException {
+        this.productService.modifier(id, product);
     }
 
     //Delete
     @PreAuthorize("hasAnyAuthority('ADMIN_DELETE')")
     @DeleteMapping("{id}")
-    public ResponseEntity<?> deleteProduct(@PathVariable Long id){
-        return this.productService.delete(id);
+    public void deleteProduct(@PathVariable Long id) throws IOException {
+        this.productService.deleteProduct(id);
+    }
+
+    //Multiple Delete
+    @DeleteMapping("/delete-multiple")
+    @PreAuthorize("hasAuthority('ADMIN_DELETE')")
+    public ResponseEntity<?> deleteMultipleProducts(@RequestBody List<Long> ids) {
+        try {
+            productService.deleteProducts(ids);
+            return ResponseEntity.ok("Produits supprimés avec succès");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("code", 400, "message", "Erreur : " + e.getMessage()));
+        }
     }
 
 }
