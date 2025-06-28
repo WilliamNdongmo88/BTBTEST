@@ -1,0 +1,1 @@
+ALTER TABLE product ADD COLUMN sub_category_id BIGINT;

@@ -29,6 +29,10 @@ public class Product {
     @OneToMany(mappedBy = "product", cascade = CascadeType.PERSIST, orphanRemoval = false)
     private List<Files> images = new ArrayList<>();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sub_category_id")
+    private SubCategory subCategory;
+
     @ManyToOne
     @JoinColumn(name = "added_by")
     private User addedBy;
