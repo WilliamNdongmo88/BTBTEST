@@ -94,6 +94,7 @@ public class JwtService {
         long expireIn  = now + 100 * 60 * 1000; // 100 minutes
 
         Map<String, Object> claims = Map.of(
+                "id",user.getId(),
                 "nom", user.getName(),
                 "role", user.getRole().getLibelle(),
                 Claims.EXPIRATION, new Date(expireIn),
